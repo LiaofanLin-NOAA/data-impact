@@ -42,3 +42,18 @@ one can simply run:
 
 ```bash
 sh di_driver.sh
+````
+
+###  Optional Detailed Channel Saving
+
+> **Exact instruction (as requested):**  
+> to disable the write of detailed satellite data information, one can change `save_channel_info` to false in the following:  
+> 
+> ```python
+> def analyze_sate(yyyy, mm, dd, hh, data_path, save_channel_info=True):
+> ```
+
+Set it to:
+
+```python
+def analyze_sate(yyyy, mm, dd, hh, data_path, save_channel_info=False):
