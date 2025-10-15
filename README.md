@@ -31,3 +31,14 @@ The analysis quantifies how observations (conventional, satellite, etc.) affect 
 ##  Dependencies
 
 These scripts require a functional python environment (e.g., `pyDAmonitor` module).  They have been tested on NOAA HPC systems Hera and Ursa, with test data staged on both HPC platforms.
+
+##  Running the Analysis
+
+After making sure  
+1️⃣ the Python environment is correctly loaded, and  
+2️⃣ the required diag files are available under the specified data path,  
+
+one can simply run:
+
+```bash
+sh di_driver.sh
