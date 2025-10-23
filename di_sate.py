@@ -27,7 +27,7 @@ from pyGSI.diags import Radiance
 from di_common import plot_jo_histogram, save_legacy_pickle
 
 
-def analyze_sate(yyyy, mm, dd, hh, data_path, save_channel_info=True):
+def analyze_sate(yyyy, mm, dd, hh, data_path, domain_str="True", save_channel_info=False):
     cycle = f"{yyyy}{mm}{dd}{hh}"
 
     # ------------------------------------------------------------
@@ -92,6 +92,12 @@ def analyze_sate(yyyy, mm, dd, hh, data_path, save_channel_info=True):
             anl_omf = anl_series.get("omf_adjusted", np.nan)
             inv_err = anl_series.get("inverse_observation_error", np.nan)
             if np.isnan(inv_err) or inv_err == 0:
+                continue
+
+            # --- Apply domain filter if specified ---
+            anl_latitude  = anl_series.get("latitude", np.nan)
+            anl_longitude = anl_series.get("longitude", np.nan)
+            if not eval(domain_str, {"anl_latitude": anl_latitude, "anl_longitude": anl_longitude}):
                 continue
 
             # Compute Jo-diff
@@ -159,6 +165,9 @@ def analyze_sate(yyyy, mm, dd, hh, data_path, save_channel_info=True):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 6:
-        sys.exit("Usage: di_sate.py YYYY MM DD HH DATAPATH")
-    analyze_sate(*sys.argv[1:])
+    if len(sys.argv) < 6:
+        sys.exit("Usage: di_conv.py YYYY MM DD HH DATAPATH [DOMAIN]")
+    yyyy, mm, dd, hh, data_path = sys.argv[1:6]
+    domain_str = sys.argv[6] if len(sys.argv) > 6 else "True"
+    print(f"[INFO] Domain selection string: {domain_str}")
+    analyze_sate(yyyy, mm, dd, hh, data_path, domain_str)

@@ -25,7 +25,7 @@ from pyGSI.diags import Conventional
 from di_common import plot_jo_histogram, save_legacy_pickle
 
 
-def analyze_conv(yyyy, mm, dd, hh, data_path):
+def analyze_conv(yyyy, mm, dd, hh, data_path, domain_str="True"):
     cycle = f"{yyyy}{mm}{dd}{hh}"
     sensor_types = ["conv_fed", "conv_ps", "conv_pw", "conv_q", "conv_rw", "conv_sst", "conv_t"]
 
@@ -77,6 +77,12 @@ def analyze_conv(yyyy, mm, dd, hh, data_path):
             if int(ges.name[6]) != 1 or int(anl.name[6]) != 1:
                 continue
 
+            # --- Apply domain filter if specified ---
+            anl_latitude = float(anl["latitude"])
+            anl_longitude = float(anl["longitude"])
+            if not eval(domain_str, {"anl_latitude": anl_latitude, "anl_longitude": anl_longitude}):
+                continue
+
             jo_diff = (anl["omf_adjusted"] ** 2 - ges["omf_adjusted"] ** 2) * (inv_err ** 2)
             jo_diffs.append(jo_diff)
             inv_obs_errors.append(inv_err)
@@ -123,8 +129,12 @@ def analyze_conv(yyyy, mm, dd, hh, data_path):
                        final_max_abs_jo_diff,
                        cycle, label="conv")
 
-
+    
 if __name__ == "__main__":
-    if len(sys.argv) != 6:
-        sys.exit("Usage: di_conv.py YYYY MM DD HH DATAPATH")
-    analyze_conv(*sys.argv[1:])
+    if len(sys.argv) < 6:
+        sys.exit("Usage: di_conv.py YYYY MM DD HH DATAPATH [DOMAIN]")
+    yyyy, mm, dd, hh, data_path = sys.argv[1:6]
+    domain_str = sys.argv[6] if len(sys.argv) > 6 else "True"
+    print(f"[INFO] Domain selection string: {domain_str}")
+    analyze_conv(yyyy, mm, dd, hh, data_path, domain_str)
+
