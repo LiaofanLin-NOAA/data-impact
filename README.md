@@ -35,8 +35,8 @@ These scripts require a functional python environment (e.g., `pyDAmonitor` modul
 ##  Running the Analysis
 
 After making sure  
-1️⃣ the Python environment is correctly loaded, and  
-2️⃣ the required diag files are available under the specified data path,  
+1. the Python environment is correctly loaded, and  
+2. the required diag files are available under the specified data path,  
 
 one can simply run:
 
