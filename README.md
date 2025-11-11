@@ -57,3 +57,16 @@ Set it to:
 
 ```python
 def analyze_sate(yyyy, mm, dd, hh, data_path, save_channel_info=False):
+```
+
+
+---
+
+##  Generating Figures from Existing Pickles
+
+If the pickle files have already been generated (from `di_conv.py`, `di_conv_uv.py`, and `di_sate.py`), you can create all **FSOI proxy** figures without re-running the full analysis by executing (see all the options in the script):
+
+```bash
+python scripts/generate_data_impact_figures.py --case sub-domain --mode both
+
+
