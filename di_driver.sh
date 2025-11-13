@@ -5,11 +5,16 @@ YEAR=2024
 DATAPATH='/scratch4/BMC/wrfruc/llin/2025-zrtrr2/240601_misc/20241213-ncdiag-rrfs-full/rrfs/na/prod'
 
 # please comment out one of them: 1) True, for the entire domain; 2) or a prescribed rectangular sub-domain
-#DOMAIN_STR="True" 
-DOMAIN_STR="(anl_latitude>15) & (anl_latitude<43) & (anl_longitude>267) & (anl_longitude<282)"
+DOMAIN_STR="True" 
+#DOMAIN_STR="(anl_latitude>15) & (anl_latitude<43) & (anl_longitude>267) & (anl_longitude<282)"
+
+# whether to save detailed pickle files ("true" to enable, anything else disables)
+SAVE_DETAIL="true"
+#SAVE_DETAIL="false"
+
 
 # === Setup output directories ===
-mkdir -p figures logs pickle
+mkdir -p figures logs pickle pickle_detail
 
 # === Cycles to process ===
 for MM in 09; do
@@ -34,7 +39,7 @@ for MM in 09; do
 	  # submit the job to Slurm
 	  sbatch -J "${JOBNAME}" \
              -o "${LOGFILE}" \
-	         --export=YEAR=${YEAR},MONTH=${MM},DAY=${DD},HOUR=${HH},DATAPATH=${RRFS_PATH}/,DOMAIN="${DOMAIN_STR}" \
+             --export=YEAR=${YEAR},MONTH=${MM},DAY=${DD},HOUR=${HH},DATAPATH=${RRFS_PATH}/,DOMAIN="${DOMAIN_STR}",SAVE_DETAIL=${SAVE_DETAIL} \
 	         di_submit_jobs.sh					   			   			
 
     done

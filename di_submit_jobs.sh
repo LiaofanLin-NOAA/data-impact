@@ -14,7 +14,7 @@ module load pyDAmonitor/1.0.0
 
   
 # Running scripts  
-python di_sate.py    $YEAR $MONTH $DAY $HOUR $DATAPATH "$DOMAIN"
-python di_conv.py    $YEAR $MONTH $DAY $HOUR $DATAPATH "$DOMAIN"
-python di_conv_uv.py $YEAR $MONTH $DAY $HOUR $DATAPATH "$DOMAIN"
+#python di_sate.py    $YEAR $MONTH $DAY $HOUR $DATAPATH "$DOMAIN"
+python di_conv.py    $YEAR $MONTH $DAY $HOUR $DATAPATH "$DOMAIN" "$SAVE_DETAIL"
+#python di_conv_uv.py $YEAR $MONTH $DAY $HOUR $DATAPATH "$DOMAIN"
 
