@@ -27,7 +27,7 @@ from pyGSI.diags import Radiance
 from di_common import plot_jo_histogram, save_legacy_pickle
 
 
-def analyze_sate(yyyy, mm, dd, hh, data_path, domain_str="True", save_channel_info=False):
+def analyze_sate(yyyy, mm, dd, hh, data_path, domain_str="True", save_detail=False):
     cycle = f"{yyyy}{mm}{dd}{hh}"
 
     # ------------------------------------------------------------
@@ -75,7 +75,13 @@ def analyze_sate(yyyy, mm, dd, hh, data_path, domain_str="True", save_channel_in
 
         # --- Initialize accumulators ---
         jo_diffs, inv_obs_errors = [], []
+        sensor_lon, sensor_lat = [], []
+        sensor_elevation = []
+        sensor_channel = []
+        
         list_channel, list_latitude, list_longitude = [], [], []
+        
+        
         count_assim = 0
         count_large = 0
         count_zero = 0
@@ -88,6 +94,7 @@ def analyze_sate(yyyy, mm, dd, hh, data_path, domain_str="True", save_channel_in
 
             ges_qc_flag = ges_series.name[1]
             anl_qc_flag = anl_series.name[1]
+            
             ges_omf = ges_series.get("omf_adjusted", np.nan)
             anl_omf = anl_series.get("omf_adjusted", np.nan)
             inv_err = anl_series.get("inverse_observation_error", np.nan)
@@ -95,8 +102,12 @@ def analyze_sate(yyyy, mm, dd, hh, data_path, domain_str="True", save_channel_in
                 continue
 
             # --- Apply domain filter if specified ---
-            anl_latitude  = anl_series.get("latitude", np.nan)
-            anl_longitude = anl_series.get("longitude", np.nan)
+            anl_latitude  = float(anl_series["latitude"])
+            anl_longitude = float(anl_series["longitude"])
+            
+            #anl_latitude  = anl_series.get("latitude", np.nan)
+            #anl_longitude = anl_series.get("longitude", np.nan)
+            
             if not eval(domain_str, {"anl_latitude": anl_latitude, "anl_longitude": anl_longitude}):
                 continue
 
@@ -115,6 +126,11 @@ def analyze_sate(yyyy, mm, dd, hh, data_path, domain_str="True", save_channel_in
                 list_channel.append(anl_series.get("channel_index", np.nan))
                 list_latitude.append(anl_series.get("latitude", np.nan))
                 list_longitude.append(anl_series.get("longitude", np.nan))
+                
+                sensor_lat.append( anl_latitude )
+                sensor_lon.append( anl_longitude )
+                sensor_elevation.append( anl_series.get("elevation", np.nan) )
+                sensor_channel.append( anl_series.get("channel_index", np.nan) )
 
                 # --- Diagnostic Warnings ---
                 if abs(jo_diff) > 25:
@@ -132,16 +148,40 @@ def analyze_sate(yyyy, mm, dd, hh, data_path, domain_str="True", save_channel_in
         print(f"[INFO] {sensor}: |jo_diff|>25 count = {count_large}")
         print(f"[INFO] {sensor}: jo_diff == 0 count = {count_zero}")
 
+
+
         # --- Optional per-channel metadata pickle ---
-        if save_channel_info and count_assim > 0:
+        if save_detail and count_assim > 0:
             os.makedirs("./pickle", exist_ok=True)
             filename = f"./pickle/{cycle}_sate_channel_{sensor}.pkl"
             with open(filename, "wb") as f:
                 pickle.dump([sensor, list_channel, list_latitude, list_longitude], f)
             print(f"[SAVE] Channel metadata: {filename}")
 
-        # --- Plot histogram (shared) ---
+
+
+        # --- Save detailed info, plot histogram, and save overall stat ---
         if count_assim > 0:
+                        
+            # --- Save detailed per-point data to pickle_detail/ ---
+            if save_detail:            
+                
+                detail_dir  = "pickle_sate_detail"
+                detail_file = os.path.join(detail_dir, f"{cycle}_{sensor}_detail.pkl")
+
+                detail_dict = {
+                    "jo_diff": np.array(jo_diffs),
+                    "inv_obs_errors": np.array(inv_obs_errors),
+                    "latitude": np.array(sensor_lat),
+                    "longitude": np.array(sensor_lon),
+                    "elevation": np.array(sensor_elevation),
+                    "channel": np.array(sensor_channel)
+                }
+
+                with open(detail_file, "wb") as f:
+                    pickle.dump(detail_dict, f, protocol=pickle.HIGHEST_PROTOCOL)            
+            
+            # --- Continue with your normal workflow ---  
             plot_jo_histogram(sensor, yyyy, mm, dd, hh,
                               jo_diffs, inv_obs_errors,
                               count_assim, count_large, count_zero,
@@ -166,8 +206,12 @@ def analyze_sate(yyyy, mm, dd, hh, data_path, domain_str="True", save_channel_in
 
 if __name__ == "__main__":
     if len(sys.argv) < 6:
-        sys.exit("Usage: di_conv.py YYYY MM DD HH DATAPATH [DOMAIN]")
+        sys.exit("Usage: di_conv.py YYYY MM DD HH DATAPATH [DOMAIN] [SAVE_DETAIL]")
     yyyy, mm, dd, hh, data_path = sys.argv[1:6]
     domain_str = sys.argv[6] if len(sys.argv) > 6 else "True"
+    save_detail = sys.argv[7].lower() in ["true"] if len(sys.argv) > 7 else False
+    
     print(f"[INFO] Domain selection string: {domain_str}")
-    analyze_sate(yyyy, mm, dd, hh, data_path, domain_str)
+    print(f"[INFO] Save detailed pickle: {save_detail}")
+    
+    analyze_sate(yyyy, mm, dd, hh, data_path, domain_str, save_detail)
